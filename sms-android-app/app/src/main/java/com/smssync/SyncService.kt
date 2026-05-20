@@ -32,7 +32,15 @@ class SyncService : Service() {
         super.onCreate()
         Log.d(TAG, "SyncService Created.")
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                createNotification(),
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification())
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -58,7 +66,7 @@ class SyncService : Service() {
         val serverUrl = prefs.getString(KEY_SERVER_URL, "") ?: ""
         val apiToken = prefs.getString(KEY_API_TOKEN, "") ?: ""
         val deviceName = prefs.getString(KEY_DEVICE_NAME, "Android Device") ?: "Android Device"
-        val deviceId = getDeviceId()
+        val deviceId = getDeviceUniqueId()
 
         if (serverUrl.isEmpty()) {
             val logMsg = "Sync Failed: Server URL not configured."
@@ -130,7 +138,7 @@ class SyncService : Service() {
     }
 
     // Unique Persistent Device ID
-    private fun getDeviceId(): String {
+    private fun getDeviceUniqueId(): String {
         return Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown_device"
     }
 

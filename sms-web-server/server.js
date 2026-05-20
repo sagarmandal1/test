@@ -393,6 +393,136 @@ app.get('/api/sms', authMiddleware, (req, res) => {
   }
 });
 
+// API: Payment Verification API (Secured)
+app.post('/api/verify-payment', authMiddleware, (req, res) => {
+  const { sender_number, trx_id, amount } = req.body;
+
+  if (!trx_id) {
+    return res.status(400).json({ error: 'Missing required parameter: trx_id' });
+  }
+  if (!sender_number) {
+    return res.status(400).json({ error: 'Missing required parameter: sender_number' });
+  }
+  if (amount === undefined || amount === null) {
+    return res.status(400).json({ error: 'Missing required parameter: amount' });
+  }
+
+  const parsedAmount = parseFloat(amount);
+  if (isNaN(parsedAmount)) {
+    return res.status(400).json({ error: 'Invalid parameter: amount must be a number' });
+  }
+
+  const cleanTrx = trx_id.trim();
+
+  // Helper matching functions
+  function matchSenderNumber(messageText, expectedNumber) {
+    if (!expectedNumber) return false;
+    const cleanExpected = expectedNumber.replace(/\D/g, '');
+    if (cleanExpected.length < 10) return false;
+    const last10Digits = cleanExpected.slice(-10);
+    const last11Digits = cleanExpected.slice(-11);
+
+    if (messageText.includes(last11Digits) || messageText.includes(last10Digits)) {
+      return true;
+    }
+
+    const cleanMessageText = messageText.replace(/[-+]/g, '');
+    const digitSequences = cleanMessageText.match(/\d+/g) || [];
+    for (const seq of digitSequences) {
+      if (seq.endsWith(last10Digits)) {
+        if (seq.length === 10 || seq.endsWith(last11Digits) || seq.includes('880' + last10Digits) || seq.includes('88' + last11Digits)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function matchAmount(messageText, expectedAmountVal) {
+    const target = parseFloat(expectedAmountVal);
+    if (isNaN(target)) return false;
+
+    const textLower = messageText.toLowerCase();
+
+    const mainAmtRegexes = [
+      /(?:received|cash\s*in|payment|added)\s+(?:cash\s*in\s+|payment\s+)?(?:tk|tk\.|taka)?\s*([\d,]+(?:\.\d+)?)/i,
+      /(?:tk|tk\.|taka)\s*([\d,]+(?:\.\d+)?)\s*(?:received|cash\s*in|payment|added)/i,
+      /(?:tk|tk\.|taka)\s*([\d,]+(?:\.\d+)?)/i
+    ];
+
+    for (const rx of mainAmtRegexes) {
+      const m = textLower.match(rx);
+      if (m) {
+        const val = parseFloat(m[1].replace(/,/g, ''));
+        if (!isNaN(val) && Math.abs(val - target) < 0.01) {
+          return true;
+        }
+      }
+    }
+
+    const allNumbers = messageText.match(/\b\d+(?:\.\d+)?\b/g) || [];
+    for (const numStr of allNumbers) {
+      const val = parseFloat(numStr.replace(/,/g, ''));
+      if (!isNaN(val) && Math.abs(val - target) < 0.01) {
+        if (numStr.length < 9) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  function verifyRows(rows) {
+    if (rows.length === 0) {
+      return res.status(200).json({
+        status: 'failed',
+        message: 'Transaction ID not found.'
+      });
+    }
+
+    // Try to find a row that matches both amount and sender number
+    const matchedRow = rows.find(row => 
+      matchSenderNumber(row.message, sender_number) && 
+      matchAmount(row.message, parsedAmount)
+    );
+
+    if (matchedRow) {
+      return res.status(200).json({
+        status: 'success',
+        message: 'Payment verified successfully!',
+        data: {
+          trx_id: cleanTrx,
+          amount: parsedAmount,
+          sender: sender_number,
+          timestamp: matchedRow.timestamp
+        }
+      });
+    } else {
+      return res.status(200).json({
+        status: 'failed',
+        message: 'Transaction ID found, but amount or sender number does not match.'
+      });
+    }
+  }
+
+  if (isSQLite) {
+    const query = `SELECT * FROM sms WHERE LOWER(message) LIKE ?`;
+    const param = `%${cleanTrx.toLowerCase()}%`;
+    db.all(query, [param], (err, rows) => {
+      if (err) {
+        console.error('Failed to query SQLite for verification:', err.message);
+        return res.status(500).json({ error: 'Database query error' });
+      }
+      verifyRows(rows);
+    });
+  } else {
+    const lowercaseTrx = cleanTrx.toLowerCase();
+    const rows = jsonDb.sms.filter(sms => sms.message.toLowerCase().includes(lowercaseTrx));
+    verifyRows(rows);
+  }
+});
+
 // API: Retrieve registered devices (Secured)
 app.get('/api/devices', authMiddleware, (req, res) => {
   if (isSQLite) {
