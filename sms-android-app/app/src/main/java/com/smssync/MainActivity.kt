@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnWhitelistBattery: Button
 
     private val logsList = mutableListOf<String>()
+    private var hasPromptedBattery = false
 
     // Broadcast receiver to listen for background service logs
     private val logReceiver = object : BroadcastReceiver() {
@@ -119,6 +120,11 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updateServiceStatusUI()
         checkBatteryOptimization()
+        
+        if (!hasPromptedBattery) {
+            hasPromptedBattery = true
+            showBatteryExemptionDialog()
+        }
     }
 
     override fun onDestroy() {
@@ -462,6 +468,29 @@ class MainActivity : AppCompatActivity() {
             sb.append(log).append("\n")
         }
         tvLogs.text = sb.toString()
+    }
+
+    private fun showBatteryExemptionDialog() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                if (isFinishing || isDestroyed) return
+                
+                androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Background Reliability")
+                    .setMessage("Modern Android devices restrict background sync to save battery. To ensure 24/7 real-time SMS payment sync, please whitelist the gateway app.\n\nChoose 'Allow' in the next system screen.")
+                    .setCancelable(false)
+                    .setPositiveButton("Configure") { dialog, _ ->
+                        dialog.dismiss()
+                        requestBatteryOptimizationBypass()
+                    }
+                    .setNegativeButton("Later") { dialog, _ ->
+                        dialog.dismiss()
+                        addLog("Warning: Battery optimizations active. Sync may be delayed.")
+                    }
+                    .show()
+            }
+        }
     }
 
     companion object {
