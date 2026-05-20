@@ -25,7 +25,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.gson.Gson
 import okhttp3.Call
 import okhttp3.Callback
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etServerUrl: EditText
     private lateinit var etApiToken: EditText
     private lateinit var etDeviceName: EditText
-    private lateinit var switchSyncService: MaterialSwitch
+    private lateinit var layoutRadarButton: View
     private lateinit var tvServiceStatus: TextView
     private lateinit var btnSaveConfig: Button
     private lateinit var btnTestConnection: Button
@@ -108,7 +107,7 @@ class MainActivity : AppCompatActivity() {
         etServerUrl = findViewById(R.id.etServerUrl)
         etApiToken = findViewById(R.id.etApiToken)
         etDeviceName = findViewById(R.id.etDeviceName)
-        switchSyncService = findViewById(R.id.switchSyncService)
+        layoutRadarButton = findViewById(R.id.layoutRadarButton)
         tvServiceStatus = findViewById(R.id.tvServiceStatus)
         btnSaveConfig = findViewById(R.id.btnSaveConfig)
         btnTestConnection = findViewById(R.id.btnTestConnection)
@@ -147,15 +146,13 @@ class MainActivity : AppCompatActivity() {
         btnSyncHistory.setOnClickListener { syncSmsHistory() }
         btnWhitelistBattery.setOnClickListener { requestBatteryOptimizationBypass() }
 
-        switchSyncService.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
+        layoutRadarButton.setOnClickListener {
+            if (SyncService.isRunning) {
+                stopSyncService()
+            } else {
                 if (checkAndRequestPermissions()) {
                     startSyncService()
-                } else {
-                    switchSyncService.isChecked = false
                 }
-            } else {
-                stopSyncService()
             }
         }
 
@@ -210,14 +207,10 @@ class MainActivity : AppCompatActivity() {
         val savedUrl = prefs.getString(SyncService.KEY_SERVER_URL, "") ?: ""
         val savedToken = prefs.getString(SyncService.KEY_API_TOKEN, "") ?: ""
         val savedName = prefs.getString(SyncService.KEY_DEVICE_NAME, "") ?: ""
-        val serviceEnabled = prefs.getBoolean(SyncService.KEY_SERVICE_ENABLED, false)
-
         etServerUrl.setText(savedUrl)
         etApiToken.setText(savedToken)
         etDeviceName.setText(if (savedName.isEmpty()) Build.MODEL else savedName)
         
-        // Auto-enable UI switch state based on preference
-        switchSyncService.isChecked = serviceEnabled
         updateServiceStatusUI()
     }
 
@@ -389,7 +382,6 @@ class MainActivity : AppCompatActivity() {
             addLog("Foreground Sync Service started.")
         } catch (e: Exception) {
             addLog("Failed to start service: ${e.message}")
-            switchSyncService.isChecked = false
         }
     }
 
@@ -408,27 +400,21 @@ class MainActivity : AppCompatActivity() {
         if (SyncService.isRunning) {
             tvServiceStatus.text = "Service Status: Running"
             tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.active_green))
-            if (!switchSyncService.isChecked) {
-                switchSyncService.isChecked = true
-            }
 
             // Radar Active State
             ivRadarCore.setColorFilter(Color.parseColor("#22C55E"))
             tvRadarStatus.text = "GATEWAY ONLINE"
             tvRadarStatus.setTextColor(Color.parseColor("#22C55E"))
-            tvRadarSubtitle.text = "24/7 background sync is active"
+            tvRadarSubtitle.text = "24/7 background sync is active. Tap to stop."
         } else {
             tvServiceStatus.text = "Service Status: Inactive"
             tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.text_muted))
-            if (switchSyncService.isChecked) {
-                switchSyncService.isChecked = false
-            }
 
             // Radar Inactive State
             ivRadarCore.setColorFilter(Color.parseColor("#EF4444"))
             tvRadarStatus.text = "GATEWAY INACTIVE"
             tvRadarStatus.setTextColor(Color.parseColor("#EF4444"))
-            tvRadarSubtitle.text = "Turn on the service toggle at the top"
+            tvRadarSubtitle.text = "Tap to activate 24/7 background sync"
         }
     }
 
@@ -520,11 +506,11 @@ class MainActivity : AppCompatActivity() {
 
             if (allGranted) {
                 addLog("All permissions successfully granted.")
-                switchSyncService.isChecked = true
+                startSyncService()
             } else {
                 addLog("[Warn] Missing required permissions. Sync disabled.")
                 Toast.makeText(this, "Permissions required for Gateway operation", Toast.LENGTH_LONG).show()
-                switchSyncService.isChecked = false
+                stopSyncService()
             }
         }
     }

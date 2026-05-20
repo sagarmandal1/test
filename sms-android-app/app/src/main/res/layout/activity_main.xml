@@ -51,11 +51,6 @@
                 android:textColor="#94A3B8"
                 android:textSize="12sp" />
         </LinearLayout>
-
-        <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/switchSyncService"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
     </LinearLayout>
 
     <!-- Scrollable Frame for Dynamic Containers -->
@@ -102,10 +97,14 @@
                         android:padding="22dp">
 
                         <FrameLayout
+                            android:id="@+id/layoutRadarButton"
                             android:layout_width="96dp"
                             android:layout_height="96dp"
                             android:background="@drawable/circle_radar_bg"
-                            android:gravity="center">
+                            android:gravity="center"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?android:attr/selectableItemBackgroundBorderless">
 
                             <ImageView
                                 android:id="@+id/ivRadarCore"
