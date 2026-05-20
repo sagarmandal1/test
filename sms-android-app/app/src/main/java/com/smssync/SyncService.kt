@@ -30,6 +30,7 @@ class SyncService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        isRunning = true
         Log.d(TAG, "SyncService Created.")
         createNotificationChannel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -43,15 +44,32 @@ class SyncService : Service() {
         }
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent != null && intent.action == ACTION_SYNC_SMS) {
-            val sender = intent.getStringExtra(EXTRA_SENDER) ?: "Unknown"
-            val message = intent.getStringExtra(EXTRA_MESSAGE) ?: ""
-            val timestamp = intent.getLongExtra(EXTRA_TIMESTAMP, System.currentTimeMillis())
-            val simSlot = intent.getIntExtra(EXTRA_SIM_SLOT, 1)
+    override fun onDestroy() {
+        isRunning = false
+        Log.d(TAG, "SyncService Destroyed.")
+        super.onDestroy()
+    }
 
-            Log.d(TAG, "Syncing SMS from $sender...")
-            syncSmsToServer(sender, message, timestamp, simSlot)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent != null) {
+            when (intent.action) {
+                ACTION_SYNC_SMS -> {
+                    val sender = intent.getStringExtra(EXTRA_SENDER) ?: "Unknown"
+                    val message = intent.getStringExtra(EXTRA_MESSAGE) ?: ""
+                    val timestamp = intent.getLongExtra(EXTRA_TIMESTAMP, System.currentTimeMillis())
+                    val simSlot = intent.getIntExtra(EXTRA_SIM_SLOT, 1)
+
+                    Log.d(TAG, "Syncing SMS from $sender...")
+                    syncSmsToServer(sender, message, timestamp, simSlot)
+                }
+                ACTION_STOP_SERVICE -> {
+                    Log.d(TAG, "Stop Action requested via Notification.")
+                    val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    prefs.edit().putBoolean(KEY_SERVICE_ENABLED, false).apply()
+                    broadcastLog("Service stopped via notification.")
+                    stopSelf()
+                }
+            }
         }
         return START_STICKY
     }
@@ -170,6 +188,14 @@ class SyncService : Service() {
         val stopServiceIntent = Intent(this, SyncService::class.java).apply {
             action = ACTION_STOP_SERVICE
         }
+        val pendingFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        val stopPendingIntent = android.app.PendingIntent.getService(
+            this, 0, stopServiceIntent, pendingFlags
+        )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("SMS Gateway Active")
@@ -177,6 +203,7 @@ class SyncService : Service() {
             .setSmallIcon(android.R.drawable.sym_def_app_icon)
             .setOngoing(true)
             .setCategory(Notification.CATEGORY_SERVICE)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop Sync", stopPendingIntent)
             .build()
     }
 
@@ -184,12 +211,16 @@ class SyncService : Service() {
         const val CHANNEL_ID = "SmsSyncChannel"
         const val NOTIFICATION_ID = 101
         private const val TAG = "SyncService"
+        
+        @JvmStatic
+        var isRunning = false
 
         // SharedPreferences Constants
         const val PREFS_NAME = "SmsSyncPrefs"
         const val KEY_SERVER_URL = "server_url"
         const val KEY_API_TOKEN = "api_token"
         const val KEY_DEVICE_NAME = "device_name"
+        const val KEY_SERVICE_ENABLED = "service_enabled"
 
         // Actions
         const val ACTION_SYNC_SMS = "com.smssync.action.SYNC_SMS"

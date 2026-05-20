@@ -10,6 +10,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.provider.Telephony
 import android.util.Log
@@ -49,6 +50,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnTestConnection: Button
     private lateinit var btnSyncHistory: Button
     private lateinit var tvLogs: TextView
+    
+    // Background protection view links
+    private lateinit var tvBatteryStatus: TextView
+    private lateinit var tvBootStatus: TextView
+    private lateinit var btnWhitelistBattery: Button
 
     private val logsList = mutableListOf<String>()
 
@@ -75,6 +81,11 @@ class MainActivity : AppCompatActivity() {
         btnTestConnection = findViewById(R.id.btnTestConnection)
         btnSyncHistory = findViewById(R.id.btnSyncHistory)
         tvLogs = findViewById(R.id.tvLogs)
+        
+        // Background Protection Views
+        tvBatteryStatus = findViewById(R.id.tvBatteryStatus)
+        tvBootStatus = findViewById(R.id.tvBootStatus)
+        btnWhitelistBattery = findViewById(R.id.btnWhitelistBattery)
 
         // Load Saved Configuration
         loadSavedConfig()
@@ -83,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         btnSaveConfig.setOnClickListener { saveConfig() }
         btnTestConnection.setOnClickListener { testConnection() }
         btnSyncHistory.setOnClickListener { syncSmsHistory() }
+        btnWhitelistBattery.setOnClickListener { requestBatteryOptimizationBypass() }
 
         switchSyncService.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -101,6 +113,12 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(logReceiver, filter, RECEIVER_EXPORTED_FLAG())
 
         addLog("System initialized. Awaiting configuration.")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateServiceStatusUI()
+        checkBatteryOptimization()
     }
 
     override fun onDestroy() {
@@ -122,13 +140,15 @@ class MainActivity : AppCompatActivity() {
         val savedUrl = prefs.getString(SyncService.KEY_SERVER_URL, "") ?: ""
         val savedToken = prefs.getString(SyncService.KEY_API_TOKEN, "") ?: ""
         val savedName = prefs.getString(SyncService.KEY_DEVICE_NAME, "") ?: ""
+        val serviceEnabled = prefs.getBoolean(SyncService.KEY_SERVICE_ENABLED, false)
 
         etServerUrl.setText(savedUrl)
         etApiToken.setText(savedToken)
         etDeviceName.setText(if (savedName.isEmpty()) Build.MODEL else savedName)
         
-        // Auto-enable UI switch state (verify service is running or check state)
-        // For simplicity, we keep the service persistent if configured.
+        // Auto-enable UI switch state based on preference
+        switchSyncService.isChecked = serviceEnabled
+        updateServiceStatusUI()
     }
 
     // Save SharedPreferences Config
@@ -284,6 +304,9 @@ class MainActivity : AppCompatActivity() {
 
     // Service Management
     private fun startSyncService() {
+        val prefs = getSharedPreferences(SyncService.PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(SyncService.KEY_SERVICE_ENABLED, true).apply()
+
         val serviceIntent = Intent(this, SyncService::class.java)
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -301,11 +324,73 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stopSyncService() {
+        val prefs = getSharedPreferences(SyncService.PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(SyncService.KEY_SERVICE_ENABLED, false).apply()
+
         val serviceIntent = Intent(this, SyncService::class.java)
         stopService(serviceIntent)
         tvServiceStatus.text = "Service Status: Inactive"
         tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.text_muted))
         addLog("Foreground Sync Service stopped.")
+    }
+
+    private fun updateServiceStatusUI() {
+        if (SyncService.isRunning) {
+            tvServiceStatus.text = "Service Status: Running"
+            tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.active_green))
+            if (!switchSyncService.isChecked) {
+                switchSyncService.isChecked = true
+            }
+        } else {
+            tvServiceStatus.text = "Service Status: Inactive"
+            tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.text_muted))
+            if (switchSyncService.isChecked) {
+                switchSyncService.isChecked = false
+            }
+        }
+    }
+
+    private fun checkBatteryOptimization() {
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val isIgnoring = pm.isIgnoringBatteryOptimizations(packageName)
+            if (isIgnoring) {
+                tvBatteryStatus.text = "Battery Saver: Protected"
+                tvBatteryStatus.setTextColor(ContextCompat.getColor(this, R.color.active_green))
+                btnWhitelistBattery.text = "Protected"
+                btnWhitelistBattery.isEnabled = false
+                btnWhitelistBattery.alpha = 0.5f
+            } else {
+                tvBatteryStatus.text = "Battery Saver: Optimized (Restricted)"
+                tvBatteryStatus.setTextColor(ContextCompat.getColor(this, R.color.text_muted))
+                btnWhitelistBattery.text = "Bypass"
+                btnWhitelistBattery.isEnabled = true
+                btnWhitelistBattery.alpha = 1.0f
+            }
+        } else {
+            tvBatteryStatus.text = "Battery Saver: Unlimited Support"
+            btnWhitelistBattery.text = "Supported"
+            btnWhitelistBattery.isEnabled = false
+            btnWhitelistBattery.alpha = 0.5f
+        }
+    }
+
+    private fun requestBatteryOptimizationBypass() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    startActivity(intent)
+                } catch (ex: Exception) {
+                    Toast.makeText(this, "Could not open battery settings. Please whitelist manually.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
     // Permission Systems
