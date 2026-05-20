@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.database.Cursor
+import android.graphics.Color
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -14,8 +16,10 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.provider.Telephony
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -56,6 +60,24 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvBootStatus: TextView
     private lateinit var btnWhitelistBattery: Button
 
+    // Tab Layout References
+    private lateinit var layoutDashboard: View
+    private lateinit var layoutSettings: View
+    private lateinit var tabDashboard: View
+    private lateinit var tabSettings: View
+    private lateinit var ivTabDashboard: ImageView
+    private lateinit var tvTabDashboard: TextView
+    private lateinit var ivTabSettings: ImageView
+    private lateinit var tvTabSettings: TextView
+
+    // Dashboard UI References
+    private lateinit var ivRadarCore: ImageView
+    private lateinit var tvRadarStatus: TextView
+    private lateinit var tvRadarSubtitle: TextView
+    private lateinit var tvStatsTodayCount: TextView
+    private lateinit var tvStatsSimSlots: TextView
+    private lateinit var tvStatsLatency: TextView
+
     private val logsList = mutableListOf<String>()
     private var hasPromptedBattery = false
 
@@ -64,6 +86,16 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             intent?.getStringExtra(SyncService.EXTRA_LOG_MSG)?.let { logMsg ->
                 addLog(logMsg)
+            }
+            intent?.let {
+                if (it.hasExtra("today_count")) {
+                    val count = it.getIntExtra("today_count", 0)
+                    tvStatsTodayCount.text = count.toString()
+                }
+                if (it.hasExtra("latency")) {
+                    val latency = it.getLongExtra("latency", 0L)
+                    tvStatsLatency.text = "${latency} ms"
+                }
             }
         }
     }
@@ -88,6 +120,24 @@ class MainActivity : AppCompatActivity() {
         tvBootStatus = findViewById(R.id.tvBootStatus)
         btnWhitelistBattery = findViewById(R.id.btnWhitelistBattery)
 
+        // Tab Containers & Toggles
+        layoutDashboard = findViewById(R.id.layout_dashboard)
+        layoutSettings = findViewById(R.id.layout_settings)
+        tabDashboard = findViewById(R.id.tabDashboard)
+        tabSettings = findViewById(R.id.tabSettings)
+        ivTabDashboard = findViewById(R.id.ivTabDashboard)
+        tvTabDashboard = findViewById(R.id.tvTabDashboard)
+        ivTabSettings = findViewById(R.id.ivTabSettings)
+        tvTabSettings = findViewById(R.id.tvTabSettings)
+
+        // Dashboard Stats & Radar
+        ivRadarCore = findViewById(R.id.ivRadarCore)
+        tvRadarStatus = findViewById(R.id.tvRadarStatus)
+        tvRadarSubtitle = findViewById(R.id.tvRadarSubtitle)
+        tvStatsTodayCount = findViewById(R.id.tvStatsTodayCount)
+        tvStatsSimSlots = findViewById(R.id.tvStatsSimSlots)
+        tvStatsLatency = findViewById(R.id.tvStatsLatency)
+
         // Load Saved Configuration
         loadSavedConfig()
 
@@ -109,6 +159,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Setup Tab Listeners
+        tabDashboard.setOnClickListener { switchToTab(true) }
+        tabSettings.setOnClickListener { switchToTab(false) }
+
+        // Default tab behavior
+        val serverUrl = etServerUrl.text.toString().trim()
+        if (serverUrl.isEmpty()) {
+            switchToTab(false)
+        } else {
+            switchToTab(true)
+        }
+
         // Register Log Receiver
         val filter = IntentFilter(SyncService.ACTION_LOG_BROADCAST)
         registerReceiver(logReceiver, filter, RECEIVER_EXPORTED_FLAG())
@@ -120,6 +182,8 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         updateServiceStatusUI()
         checkBatteryOptimization()
+        loadStats()
+        updateSimSlots()
         
         if (!hasPromptedBattery) {
             hasPromptedBattery = true
@@ -347,12 +411,24 @@ class MainActivity : AppCompatActivity() {
             if (!switchSyncService.isChecked) {
                 switchSyncService.isChecked = true
             }
+
+            // Radar Active State
+            ivRadarCore.setColorFilter(Color.parseColor("#22C55E"))
+            tvRadarStatus.text = "GATEWAY ONLINE"
+            tvRadarStatus.setTextColor(Color.parseColor("#22C55E"))
+            tvRadarSubtitle.text = "24/7 background sync is active"
         } else {
             tvServiceStatus.text = "Service Status: Inactive"
             tvServiceStatus.setTextColor(ContextCompat.getColor(this, R.color.text_muted))
             if (switchSyncService.isChecked) {
                 switchSyncService.isChecked = false
             }
+
+            // Radar Inactive State
+            ivRadarCore.setColorFilter(Color.parseColor("#EF4444"))
+            tvRadarStatus.text = "GATEWAY INACTIVE"
+            tvRadarStatus.setTextColor(Color.parseColor("#EF4444"))
+            tvRadarSubtitle.text = "Turn on the service toggle at the top"
         }
     }
 
@@ -491,6 +567,64 @@ class MainActivity : AppCompatActivity() {
                     .show()
             }
         }
+    }
+
+    private fun switchToTab(showDashboard: Boolean) {
+        if (showDashboard) {
+            layoutDashboard.visibility = View.VISIBLE
+            layoutSettings.visibility = View.GONE
+
+            ivTabDashboard.setColorFilter(Color.parseColor("#6366F1"))
+            tvTabDashboard.setTextColor(Color.parseColor("#6366F1"))
+            tvTabDashboard.setTypeface(null, Typeface.BOLD)
+
+            ivTabSettings.setColorFilter(Color.parseColor("#94A3B8"))
+            tvTabSettings.setTextColor(Color.parseColor("#94A3B8"))
+            tvTabSettings.setTypeface(null, Typeface.NORMAL)
+        } else {
+            layoutDashboard.visibility = View.GONE
+            layoutSettings.visibility = View.VISIBLE
+
+            ivTabDashboard.setColorFilter(Color.parseColor("#94A3B8"))
+            tvTabDashboard.setTextColor(Color.parseColor("#94A3B8"))
+            tvTabDashboard.setTypeface(null, Typeface.NORMAL)
+
+            ivTabSettings.setColorFilter(Color.parseColor("#6366F1"))
+            tvTabSettings.setTextColor(Color.parseColor("#6366F1"))
+            tvTabSettings.setTypeface(null, Typeface.BOLD)
+        }
+    }
+
+    private fun loadStats() {
+        val prefs = getSharedPreferences(SyncService.PREFS_NAME, Context.MODE_PRIVATE)
+        val sdf = SimpleDateFormat("yyyyMMdd", Locale.US)
+        val todayStr = sdf.format(Date())
+        val savedDate = prefs.getString("sync_date", "")
+        val count = if (savedDate == todayStr) {
+            prefs.getInt("today_synced_count", 0)
+        } else {
+            0
+        }
+        tvStatsTodayCount.text = count.toString()
+    }
+
+    private fun updateSimSlots() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                val subscriptionManager = getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as? android.telephony.SubscriptionManager
+                if (subscriptionManager != null) {
+                    val activeList = subscriptionManager.activeSubscriptionInfoList
+                    val count = activeList?.size ?: 0
+                    if (count > 0) {
+                        tvStatsSimSlots.text = if (count == 1) "SIM 1 Active" else "Dual SIM ($count)"
+                        return
+                    }
+                }
+            } catch (e: Exception) {
+                // safely ignore
+            }
+        }
+        tvStatsSimSlots.text = "Active Sim"
     }
 
     companion object {

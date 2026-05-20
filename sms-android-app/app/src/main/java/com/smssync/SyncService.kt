@@ -118,23 +118,27 @@ class SyncService : Service() {
             .post(requestBody)
             .build()
 
+        val startTime = System.currentTimeMillis()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                val latency = System.currentTimeMillis() - startTime
                 val logMsg = "Failed to sync: ${e.message}"
                 Log.e(TAG, logMsg)
-                broadcastLog("[Error] SMS from $sender sync failed: ${e.localizedMessage}")
+                broadcastLog("[Error] SMS from $sender sync failed: ${e.localizedMessage}", latency)
             }
 
             override fun onResponse(call: Call, response: Response) {
+                val latency = System.currentTimeMillis() - startTime
                 response.use {
                     if (response.isSuccessful) {
+                        incrementSyncCount()
                         val logMsg = "Successfully synced SMS from $sender to server."
                         Log.d(TAG, logMsg)
-                        broadcastLog("[Success] Synced SMS from $sender")
+                        broadcastLog("[Success] Synced SMS from $sender", latency)
                     } else {
                         val logMsg = "Server returned error: ${response.code} ${response.message}"
                         Log.e(TAG, logMsg)
-                        broadcastLog("[Error] Server returned code ${response.code} for $sender")
+                        broadcastLog("[Error] Server returned code ${response.code} for $sender", latency)
                     }
                 }
             }
@@ -161,11 +165,36 @@ class SyncService : Service() {
     }
 
     // Broadcast log back to MainActivity if it is running
-    private fun broadcastLog(message: String) {
+    private fun broadcastLog(message: String, latency: Long = -1L) {
         val logIntent = Intent(ACTION_LOG_BROADCAST).apply {
             putExtra(EXTRA_LOG_MSG, message)
+            if (latency != -1L) {
+                putExtra("latency", latency)
+            }
+            val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            putExtra("today_count", prefs.getInt("today_synced_count", 0))
         }
         sendBroadcast(logIntent)
+    }
+
+    private fun incrementSyncCount() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val sdf = java.text.SimpleDateFormat("yyyyMMdd", java.util.Locale.US)
+        val todayStr = sdf.format(java.util.Date())
+        val savedDate = prefs.getString("sync_date", "")
+        
+        val currentCount = if (savedDate == todayStr) {
+            prefs.getInt("today_synced_count", 0)
+        } else {
+            0
+        }
+        
+        val newCount = currentCount + 1
+        prefs.edit().apply {
+            putString("sync_date", todayStr)
+            putInt("today_synced_count", newCount)
+            apply()
+        }
     }
 
     // Create Notification Channel for Android O+

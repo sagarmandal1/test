@@ -5,10 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0D111C"
-    android:padding="20dp"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="10dp"
     tools:context=".MainActivity">
 
-    <!-- Header Block -->
+    <!-- Header Block (Always Visible) -->
     <LinearLayout
         android:id="@+id/headerBlock"
         android:layout_width="match_parent"
@@ -16,11 +18,11 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="5dp">
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:src="@android:drawable/ic_menu_send"
             app:tint="#6366F1"
             android:contentDescription="Logo" />
@@ -37,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:text="SMS Sync Gateway"
                 android:textColor="#FFFFFF"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:fontFamily="sans-serif-condensed-medium"
                 android:textStyle="bold" />
 
@@ -56,335 +58,618 @@
             android:layout_height="wrap_content" />
     </LinearLayout>
 
-    <!-- Configuration Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/configCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:cardBackgroundColor="#161C2D"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/headerBlock">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="GATEWAY CONFIGURATION"
-                android:textColor="#6366F1"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.1" />
-
-            <!-- Server URL Input -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Server Webhook URL"
-                android:textColor="#94A3B8"
-                android:textSize="13sp"
-                android:layout_marginTop="16dp" />
-
-            <EditText
-                android:id="@+id/etServerUrl"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/edit_text_bg"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:hint="http://192.168.1.100:3000"
-                android:textColorHint="#475569"
-                android:inputType="textUri"
-                android:layout_marginTop="6dp" />
-
-            <!-- API Access Token Input -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="API Access Token"
-                android:textColor="#94A3B8"
-                android:textSize="13sp"
-                android:layout_marginTop="14dp" />
-
-            <EditText
-                android:id="@+id/etApiToken"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/edit_text_bg"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:hint="Paste Server API Key here"
-                android:textColorHint="#475569"
-                android:inputType="textPassword"
-                android:layout_marginTop="6dp" />
-
-            <!-- Device Name Input -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Device Friendly Name"
-                android:textColor="#94A3B8"
-                android:textSize="13sp"
-                android:layout_marginTop="14dp" />
-
-            <EditText
-                android:id="@+id/etDeviceName"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@drawable/edit_text_bg"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:hint="Sagar's Primary Phone"
-                android:textColorHint="#475569"
-                android:inputType="text"
-                android:layout_marginTop="6dp" />
-
-            <!-- Actions Panel -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="20dp">
-
-                <Button
-                    android:id="@+id/btnSaveConfig"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Save"
-                    android:backgroundTint="#6366F1"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginEnd="10dp" />
-
-                <Button
-                    android:id="@+id/btnTestConnection"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.2"
-                    android:text="Test Ping"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:textColor="#6366F1"
-                    app:strokeColor="#6366F1" />
-            </LinearLayout>
-
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- History Sync Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/syncCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="#161C2D"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/configCard">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sync Old Messages"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Upload last 50 inbox SMS to server"
-                    android:textColor="#94A3B8"
-                    android:textSize="11sp" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btnSyncHistory"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sync"
-                android:textSize="12sp"
-                android:backgroundTint="#A855F7" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Background Protection Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/protectionCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="#161C2D"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/syncCard">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="BACKGROUND PROTECTION"
-                android:textColor="#A855F7"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.1" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginEnd="8dp">
-
-                    <TextView
-                        android:id="@+id/tvBatteryStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Battery Saver: Restricted"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Allow unlimited battery use for 24/7 reliability"
-                        android:textColor="#94A3B8"
-                        android:textSize="11sp" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnWhitelistBattery"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Whitelist"
-                    android:textSize="11sp"
-                    android:backgroundTint="#6366F1" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#1E293B"
-                android:layout_marginTop="12dp"
-                android:layout_marginBottom="12dp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Auto-Start on Boot"
-                        android:textColor="#FFFFFF"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sync starts automatically when phone reboots"
-                        android:textColor="#94A3B8"
-                        android:textSize="11sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/tvBootStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Enabled"
-                    android:textColor="#22C55E"
-                    android:textSize="13sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Activity Log Frame -->
-    <TextView
-        android:id="@+id/tvLogTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TRANSACTION LOGS"
-        android:textColor="#94A3B8"
-        android:textSize="11sp"
-        android:textStyle="bold"
-        android:layout_marginTop="20dp"
-        app:layout_constraintTop_toBottomOf="@id/protectionCard"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <androidx.cardview.widget.CardView
+    <!-- Scrollable Frame for Dynamic Containers -->
+    <ScrollView
+        android:id="@+id/mainContentScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="10dp"
-        app:cardBackgroundColor="#161C2D"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:layout_constraintTop_toBottomOf="@id/tvLogTitle"
-        app:layout_constraintBottom_toBottomOf="parent">
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/headerBlock"
+        app:layout_constraintBottom_toTopOf="@id/bottomTabBar">
 
-        <ScrollView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="14dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="10dp">
 
-            <TextView
-                android:id="@+id/tvLogs"
+            <!-- ========================================== -->
+            <!-- 1. DASHBOARD CONTAINER                     -->
+            <!-- ========================================== -->
+            <LinearLayout
+                android:id="@+id/layout_dashboard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="[System Ready] Configure server URL to begin logs."
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <!-- Connection Status Radar Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:cardBackgroundColor="#161C2D"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="22dp">
+
+                        <FrameLayout
+                            android:layout_width="96dp"
+                            android:layout_height="96dp"
+                            android:background="@drawable/circle_radar_bg"
+                            android:gravity="center">
+
+                            <ImageView
+                                android:id="@+id/ivRadarCore"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_gravity="center"
+                                android:src="@android:drawable/ic_menu_send"
+                                app:tint="#EF4444" />
+                        </FrameLayout>
+
+                        <TextView
+                            android:id="@+id/tvRadarStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="GATEWAY INACTIVE"
+                            android:textColor="#EF4444"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:layout_marginTop="14dp"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:id="@+id/tvRadarSubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Turn on the service toggle at the top"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Stats Row Grid -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="14dp">
+
+                    <!-- Stat 1: Today's Sync -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        app:cardBackgroundColor="#161C2D"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="TODAY SYNCED"
+                                android:textColor="#94A3B8"
+                                android:textSize="9sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvStatsTodayCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Stat 2: Active SIM Slots -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.2"
+                        android:layout_marginEnd="6dp"
+                        app:cardBackgroundColor="#161C2D"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="SIM ACTIVE"
+                                android:textColor="#94A3B8"
+                                android:textSize="9sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvStatsSimSlots"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="SIM 1 &amp; 2"
+                                android:textColor="#FFFFFF"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="5dp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Stat 3: Response Latency -->
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        app:cardBackgroundColor="#161C2D"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="0dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="12dp"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="LATENCY"
+                                android:textColor="#94A3B8"
+                                android:textSize="9sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvStatsLatency"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-- ms"
+                                android:textColor="#A855F7"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
+                <!-- Synced Logs Feed -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LIVE TRANSACTION FEED"
+                    android:textColor="#94A3B8"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:letterSpacing="0.05" />
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp"
+                    android:layout_marginTop="8dp"
+                    app:cardBackgroundColor="#161C2D"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:id="@+id/tvLogs"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="[System Ready] Awaiting log broadcasts..."
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:lineSpacingExtra="5dp"
+                            android:fontFamily="monospace" />
+                    </ScrollView>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <!-- ========================================== -->
+            <!-- 2. SETTINGS CONTAINER                      -->
+            <!-- ========================================== -->
+            <LinearLayout
+                android:id="@+id/layout_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Gateway Configuration Input Card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/configCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:cardBackgroundColor="#161C2D"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SERVER GATEWAY SETTINGS"
+                            android:textColor="#6366F1"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1" />
+
+                        <!-- Server URL Input -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Server Webhook URL"
+                            android:textColor="#94A3B8"
+                            android:textSize="12sp"
+                            android:layout_marginTop="14dp" />
+
+                        <EditText
+                            android:id="@+id/etServerUrl"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:background="@drawable/edit_text_bg"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:hint="http://192.168.1.100:3000"
+                            android:textColorHint="#475569"
+                            android:inputType="textUri"
+                            android:layout_marginTop="5dp" />
+
+                        <!-- API Access Token Input -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="API Access Token"
+                            android:textColor="#94A3B8"
+                            android:textSize="12sp"
+                            android:layout_marginTop="12dp" />
+
+                        <EditText
+                            android:id="@+id/etApiToken"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:background="@drawable/edit_text_bg"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:hint="Paste Server API Key here"
+                            android:textColorHint="#475569"
+                            android:inputType="textPassword"
+                            android:layout_marginTop="5dp" />
+
+                        <!-- Device Friendly Name Input -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Device Friendly Name"
+                            android:textColor="#94A3B8"
+                            android:textSize="12sp"
+                            android:layout_marginTop="12dp" />
+
+                        <EditText
+                            android:id="@+id/etDeviceName"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:background="@drawable/edit_text_bg"
+                            android:textColor="#FFFFFF"
+                            android:textSize="13sp"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:hint="Primary Sync Phone"
+                            android:textColorHint="#475569"
+                            android:inputType="text"
+                            android:layout_marginTop="5dp" />
+
+                        <!-- Actions Panel -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="18dp">
+
+                            <Button
+                                android:id="@+id/btnSaveConfig"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Save"
+                                android:backgroundTint="#6366F1"
+                                android:textColor="#FFFFFF"
+                                android:layout_marginEnd="10dp" />
+
+                            <Button
+                                android:id="@+id/btnTestConnection"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.2"
+                                android:text="Test Ping"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
+                                android:textColor="#6366F1"
+                                app:strokeColor="#6366F1" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- History Sync Card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/syncCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:cardBackgroundColor="#161C2D"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Sync Old Messages"
+                                android:textColor="#FFFFFF"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Upload last 50 inbox SMS to server"
+                                android:textColor="#94A3B8"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/btnSyncHistory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sync"
+                            android:textSize="12sp"
+                            android:backgroundTint="#A855F7" />
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <!-- Background Protection Card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/protectionCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:cardBackgroundColor="#161C2D"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="BACKGROUND PROTECTION"
+                            android:textColor="#A855F7"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1" />
+
+                        <!-- Battery optimization status row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginEnd="8dp">
+
+                                <TextView
+                                    android:id="@+id/tvBatteryStatus"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Battery Saver: Restricted"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Allow unlimited battery use for 24/7 reliability"
+                                    android:textColor="#94A3B8"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <Button
+                                android:id="@+id/btnWhitelistBattery"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Whitelist"
+                                android:textSize="11sp"
+                                android:backgroundTint="#6366F1" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#1E293B"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <!-- Auto-start status row -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Auto-Start on Boot"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Sync starts automatically when phone reboots"
+                                    android:textColor="#94A3B8"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/tvBootStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Enabled"
+                                android:textColor="#22C55E"
+                                android:textSize="13sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Sleek Custom Bottom Navigation Tab Bar (Always Visible at Bottom) -->
+    <LinearLayout
+        android:id="@+id/bottomTabBar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:background="#161C2D"
+        android:elevation="6dp"
+        android:gravity="center_vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Dashboard Tab -->
+        <LinearLayout
+            android:id="@+id/tabDashboard"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <ImageView
+                android:id="@+id/ivTabDashboard"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_dashboard"
+                app:tint="#6366F1" />
+
+            <TextView
+                android:id="@+id/tvTabDashboard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dashboard"
+                android:textColor="#6366F1"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Vertical Divider -->
+        <View
+            android:layout_width="1dp"
+            android:layout_height="24dp"
+            android:background="#1E293B" />
+
+        <!-- Settings Tab -->
+        <LinearLayout
+            android:id="@+id/tabSettings"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground">
+
+            <ImageView
+                android:id="@+id/ivTabSettings"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_settings"
+                app:tint="#94A3B8" />
+
+            <TextView
+                android:id="@+id/tvTabSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Settings"
                 android:textColor="#94A3B8"
-                android:textSize="12sp"
-                android:lineSpacingExtra="4dp"
-                android:fontFamily="monospace" />
-        </ScrollView>
-    </androidx.cardview.widget.CardView>
+                android:textSize="10sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
