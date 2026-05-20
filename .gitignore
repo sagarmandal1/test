@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+*.sqlite
+*.sqlite-journal
+sms_database.json
+
+# Android
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+.navigation/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+
+# OS files
+.DS_Store
+Thumbs.db
